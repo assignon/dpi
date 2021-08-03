@@ -1,6 +1,192 @@
 {% extends "base.html" %}
-<!-- {% load static %} -->
+{% load static %}
+
+{% block css %}
+<style>
+.form-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+.form{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.form select{
+    width: 30%;
+    height: 50px;
+    border-radius: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 20px;
+    font-size: 17px;
+    font-weight: bold;
+}
+.btn{
+    width: auto;
+    height: 50px;
+    padding-left: 20px;
+    padding-right: 20px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+}
+.hotels-container{
+    width: 80%;
+    height: auto;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<h3>content come here</h3>
+    <div class='form-container'>
+        <form action="" class='form'>
+            <select name="cities" class="city">
+                <option value="">Choose City</option>
+                {% for cities in city %}
+                    <option value="{{cities.acronym}}">{{cities.name}}</option>
+                {% endfor %}
+            </select>
+            <select name="regions" class="region">
+                <option value="all">All Region</option>
+            </select>
+            <input type="button" value="Search" class='btn'>
+        </form>
+    </div>
+
+    <div class='hotels-container'>
+        <h1>No city selected yet...</h1>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    let city = document.querySelector('.city')
+    let regionEl = document.querySelector('.region')
+
+    city.addEventListener('change', getRegions)
+
+    function createdEl(data){
+        // clear region selct
+        regionEl.innerHTML = ''
+        // create all option
+        let all = document.createElement('option')
+        all.value = 'all'
+        all.innerHTML = 'All Region'
+        regionEl.appendChild(all)
+
+        data.forEach((region) => {
+            let el = document.createElement('option')
+            el.value = region
+            el.className = 'region-child'
+            el.innerHTML = region
+            // append element to the dom
+            regionEl.appendChild(el)
+        })
+
+    }
+
+    function getRegions(e){
+        let city_acronym = e.currentTarget.value
+        $(function(){
+            $.ajax({
+                type: "GET",
+                url: '/get_region/',
+                data: {
+                    city_acronym: city_acronym
+                },
+                success: function (data) {
+                    createdEl(data.regions)
+                },
+                dataType: 'json'
+            })
+        })
+    }
+    // get hotels on city change
+    city.addEventListener('change', function(e){
+        let city_acronym = e.currentTarget.value
+        let region = regionEl.options[regionEl.selectedIndex].value
+        // request hotels data from DB
+        if(region != 'all'){
+            getHotels(city_acronym, 'all')
+        }else{
+            getHotels(city_acronym, region)
+        }
+    })
+    // get hotels on region change
+    regionEl.addEventListener('change', function(e){
+        let region = e.currentTarget.value
+        let city_acronym = city.options[city.selectedIndex].value
+        // request hotels data from DB
+        getHotels(city_acronym, region)
+    })
+
+    function displayHotels(hotels){
+        let hotelContainer = document.querySelector('.hotels-container')
+        hotelContainer.innerHTML = ''
+        hotels.forEach((hotel) => {
+            let div = document.createElement('div')
+            div.className = 'hotel-name-container'
+            div.style.width = '30%'
+            div.style.height = '150px'
+            div.style.display = 'flex'
+            div.style.justifyContent = 'center'
+            div.style.alignItems = 'center'
+            div.style.border = '1px solid black'
+            div.style.borderRadius = '5px'
+            div.style.marginLeft = '20px'
+            div.style.marginRight = '20px'
+            div.style.marginTop = '20px'
+            // hotel name element
+            let p = document.createElement('p')
+            p.className = 'hotel-name'
+            p.style.fontSize = '16px'
+            p.style.fontWeight = 'bold'
+            p.style.textAlign = 'center'
+            p.innerHTML = hotel.name
+            // append hotel name in hotel container
+            div.appendChild(p)
+            // append the hotels to the dom
+            hotelContainer.appendChild(div)
+        })
+    }
+
+    function getHotels(city, region){
+        // check if a city is selected
+       // if(city.options[city.selectedIndex].value != ''){
+            $(function () {
+                $.ajax({
+                    type: "GET",
+                    url: '/get_hotels/',
+                    data: {
+                        city_acronym: city,
+                        region: region
+                    },
+                    success: function (data) {
+                        <!-- console.log(data) -->
+                        displayHotels(data.hotels)
+                    },
+                    dataType: 'json'
+                })
+            })
+        /*}else{
+            alert('Select a city')
+        }*/
+    }
+</script>
 {% endblock %}
