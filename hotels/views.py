@@ -80,7 +80,8 @@ def get_hotels(request):
     if region == 'all':
         hotels = Hotel.objects.filter(city=city_acronym).values()
     else:
-        hotels = Hotel.objects.filter(Q(city=city_acronym) & Q(region=region))
+        hotels = Hotel.objects.filter(
+            Q(city=city_acronym) & Q(region=region)).values()
 
     for h in hotels:
         hotel_arr.append(h)

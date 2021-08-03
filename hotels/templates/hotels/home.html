@@ -38,6 +38,18 @@
     font-size: 17px;
     font-weight: bold;
 }
+.hotels-container{
+    width: 80%;
+    height: auto;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
 </style>
 {% endblock %}
 
@@ -57,8 +69,8 @@
         </form>
     </div>
 
-    <div class='content'>
-
+    <div class='hotels-container'>
+        <h1>No city selected yet...</h1>
     </div>
 {% endblock %}
 
@@ -86,9 +98,6 @@
             // append element to the dom
             regionEl.appendChild(el)
         })
-        // empty region select
-        //regionEl.removeChild(document.querySelector('.region-child'))
-        
 
     }
 
@@ -107,6 +116,77 @@
                 dataType: 'json'
             })
         })
+    }
+    // get hotels on city change
+    city.addEventListener('change', function(e){
+        let city_acronym = e.currentTarget.value
+        let region = regionEl.options[regionEl.selectedIndex].value
+        // request hotels data from DB
+        if(region != 'all'){
+            getHotels(city_acronym, 'all')
+        }else{
+            getHotels(city_acronym, region)
+        }
+    })
+    // get hotels on region change
+    regionEl.addEventListener('change', function(e){
+        let region = e.currentTarget.value
+        let city_acronym = city.options[city.selectedIndex].value
+        // request hotels data from DB
+        getHotels(city_acronym, region)
+    })
+
+    function displayHotels(hotels){
+        let hotelContainer = document.querySelector('.hotels-container')
+        hotelContainer.innerHTML = ''
+        hotels.forEach((hotel) => {
+            let div = document.createElement('div')
+            div.className = 'hotel-name-container'
+            div.style.width = '30%'
+            div.style.height = '150px'
+            div.style.display = 'flex'
+            div.style.justifyContent = 'center'
+            div.style.alignItems = 'center'
+            div.style.border = '1px solid black'
+            div.style.borderRadius = '5px'
+            div.style.marginLeft = '20px'
+            div.style.marginRight = '20px'
+            div.style.marginTop = '20px'
+            // hotel name element
+            let p = document.createElement('p')
+            p.className = 'hotel-name'
+            p.style.fontSize = '16px'
+            p.style.fontWeight = 'bold'
+            p.style.textAlign = 'center'
+            p.innerHTML = hotel.name
+            // append hotel name in hotel container
+            div.appendChild(p)
+            // append the hotels to the dom
+            hotelContainer.appendChild(div)
+        })
+    }
+
+    function getHotels(city, region){
+        // check if a city is selected
+       // if(city.options[city.selectedIndex].value != ''){
+            $(function () {
+                $.ajax({
+                    type: "GET",
+                    url: '/get_hotels/',
+                    data: {
+                        city_acronym: city,
+                        region: region
+                    },
+                    success: function (data) {
+                        <!-- console.log(data) -->
+                        displayHotels(data.hotels)
+                    },
+                    dataType: 'json'
+                })
+            })
+        /*}else{
+            alert('Select a city')
+        }*/
     }
 </script>
 {% endblock %}
