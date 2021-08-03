@@ -1,6 +1,112 @@
 {% extends "base.html" %}
-<!-- {% load static %} -->
+{% load static %}
+
+{% block css %}
+<style>
+.form-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+.form{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.form select{
+    width: 30%;
+    height: 50px;
+    border-radius: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 20px;
+    font-size: 17px;
+    font-weight: bold;
+}
+.btn{
+    width: auto;
+    height: 50px;
+    padding-left: 20px;
+    padding-right: 20px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<h3>content come here</h3>
+    <div class='form-container'>
+        <form action="" class='form'>
+            <select name="cities" class="city">
+                <option value="">Choose City</option>
+                {% for cities in city %}
+                    <option value="{{cities.acronym}}">{{cities.name}}</option>
+                {% endfor %}
+            </select>
+            <select name="regions" class="region">
+                <option value="all">All Region</option>
+            </select>
+            <input type="button" value="Search" class='btn'>
+        </form>
+    </div>
+
+    <div class='content'>
+
+    </div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    let city = document.querySelector('.city')
+    let regionEl = document.querySelector('.region')
+
+    city.addEventListener('change', getRegions)
+
+    function createdEl(data){
+        // clear region selct
+        regionEl.innerHTML = ''
+        // create all option
+        let all = document.createElement('option')
+        all.value = 'all'
+        all.innerHTML = 'All Region'
+        regionEl.appendChild(all)
+
+        data.forEach((region) => {
+            let el = document.createElement('option')
+            el.value = region
+            el.className = 'region-child'
+            el.innerHTML = region
+            // append element to the dom
+            regionEl.appendChild(el)
+        })
+        // empty region select
+        //regionEl.removeChild(document.querySelector('.region-child'))
+        
+
+    }
+
+    function getRegions(e){
+        let city_acronym = e.currentTarget.value
+        $(function(){
+            $.ajax({
+                type: "GET",
+                url: '/get_region/',
+                data: {
+                    city_acronym: city_acronym
+                },
+                success: function (data) {
+                    createdEl(data.regions)
+                },
+                dataType: 'json'
+            })
+        })
+    }
+</script>
 {% endblock %}

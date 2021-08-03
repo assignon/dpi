@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.db.models.query_utils import Q
 # from models.user_model import User
 import argparse
+from django.http import JsonResponse
 from .models import *
 import csv
 
@@ -50,4 +51,38 @@ class InsertCsv:
 
 
 def home(request):
-    return render(request, 'hotels/home.html')
+    # get cities
+    cities = City.objects.all().values()
+    regions = Hotel.objects.all().values()
+
+    return render(request, 'hotels/home.html', {'city': cities, 'region': regions})
+
+
+def get_city_region(request):
+    region_arr = []
+    city_acronym = request.GET.get('city_acronym')
+    regions = Hotel.objects.filter(city=city_acronym).values()
+
+    for r in regions:
+        region_arr.append(r['region'])
+
+    # return {'regions': regions}
+    return JsonResponse({'regions': region_arr})
+
+
+def get_hotels(request):
+    hotel_arr = []
+    hotels = None
+    city_acronym = request.GET.get('city_acronym')
+    region = request.GET.get('region')
+
+    # filter hotels base on sended parameters
+    if region == 'all':
+        hotels = Hotel.objects.filter(city=city_acronym).values()
+    else:
+        hotels = Hotel.objects.filter(Q(city=city_acronym) & Q(region=region))
+
+    for h in hotels:
+        hotel_arr.append(h)
+
+    return JsonResponse({'hotels': hotel_arr})
