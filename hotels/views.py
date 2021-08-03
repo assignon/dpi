@@ -23,6 +23,9 @@ class InsertCsv:
                         acronym=splited_city[0],
                         name=splited_city[1]
                     )
+                else:
+                    print('cities data laready insert')
+                    break
             print('city added')
 
     def insert_hotel(self):
@@ -40,12 +43,10 @@ class InsertCsv:
                         region=splited_city[1],
                         name=splited_city[2]
                     )
+                else:
+                    print('hotel data laready insert')
+                    break
             print('hotel added')
-
-
-insert = InsertCsv()
-insert.insert_city()
-insert.insert_hotel()
 
 
 def home(request):
