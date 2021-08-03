@@ -116,3 +116,10 @@ def get_hotels(request):
         hotel_arr.append(h)
 
     return JsonResponse({'hotels': hotel_arr})
+
+
+# #  insert csv data in DB
+# insert_csv = InsertCsv() # instantiate the insert class
+# # call the insert city and hotel csv methods
+# insert_csv.insert_city()
+# insert_csv.insert_hotel()
